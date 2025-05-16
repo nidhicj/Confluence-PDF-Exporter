@@ -1,0 +1,19 @@
+modules:
+  confluence:contentAction:
+    - key: export-as-pdf
+      function: main
+      title: Export as PDF
+      description: Export with custom header and footer
+      icon: export
+  function:
+    - key: main
+      handler: index.run
+  webtrigger:
+    - key: export-trigger
+      function: exportPdf
+permissions:
+  scopes:
+    - read:confluence-content.all
+    - read:confluence-content.summary
+app:
+  id: your-app-id
