@@ -10,7 +10,7 @@ app.post("/generate", async (req, res) => {
 
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 
   const page = await browser.newPage();
@@ -19,7 +19,7 @@ app.post("/generate", async (req, res) => {
   const pdf = await page.pdf({
     format: "A4",
     printBackground: true,
-    margin: { top: "1in", bottom: "1in", left: "0.5in", right: "0.5in" },
+    margin: { top: "1in", bottom: "1in", left: "0.5in", right: "0.5in" }
   });
 
   await browser.close();
