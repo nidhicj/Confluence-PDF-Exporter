@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-# C-onfluence-PDF-Exporter
+# Confluence-PDF-Exporter
 =======
 # Forge Hello World
 
