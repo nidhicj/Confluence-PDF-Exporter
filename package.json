@@ -1,14 +1,14 @@
 {
-  "name": "confluence-content-action-custom-ui",
-  "version": "1.1.7",
-  "main": "index.js",
-  "license": "MIT",
-  "private": true,
-  "devDependencies": {
-    "eslint": "^8.56.0",
-    "eslint-plugin-react-hooks": "^4.6.0"
+  "name": "confluence-pdf-exporter",
+  "version": "1.0.0",
+  "description": "PDF generation microservice for Confluence Forge app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
   },
   "dependencies": {
-    "@forge/resolver": "1.6.10"
+    "express": "^4.18.2",
+    "puppeteer": "^21.3.8",
+    "body-parser": "^1.20.2"
   }
 }
