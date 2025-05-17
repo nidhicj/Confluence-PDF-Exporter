@@ -5,7 +5,15 @@ import fetch from "node-fetch"; // Supported in Forge backend
 const PDF_GENERATION_ENDPOINT = "https://confluence-pdf-exporter.onrender.com/generate";
 
 export const exportHandler = async (req) => {
-  const { contentId } = req.payload;
+  try {
+      const contentId = req?.payload?.contentId;
+
+      if (!contentId) {
+        console.error("❌ No contentId found in payload. Received:", req?.payload);
+        return new Response("Missing contentId", { status: 400 });
+      }
+
+      console.log("✅ Received contentId:", contentId);
 
   // Step 1: Get page content
   const pageRes = await api.asApp().requestConfluence(
@@ -94,4 +102,9 @@ export const exportHandler = async (req) => {
       "Content-Disposition": `attachment; filename="${pageTitle}.pdf"`
     }
   });
+
+  } catch (err) {
+    console.error("❌ Unhandled export error:", err);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 };

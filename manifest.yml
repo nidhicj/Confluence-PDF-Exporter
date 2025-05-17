@@ -1,19 +1,26 @@
+app:
+  id: ari:cloud:ecosystem::app/041e871d-a0e1-489e-8eb5-f1921a316536 
+  runtime:
+    name: nodejs20.x
+
+
 modules:
   confluence:contentAction:
     - key: export-as-pdf
-      function: main
       title: Export as PDF
-      description: Export with custom header and footer
-      icon: export
+      resource: main
+      resolver:
+        function: export-page
+
   function:
-    - key: main
-      handler: index.run
-  webtrigger:
-    - key: export-trigger
-      function: exportPdf
+    - key: export-page
+      handler: myhandler.exportHandler
+
+resources:
+  - key: main
+    path: static/hello-world/build/
+
 permissions:
   scopes:
     - read:confluence-content.all
     - read:confluence-content.summary
-app:
-  id: your-app-id
