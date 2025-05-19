@@ -5,63 +5,66 @@ function App() {
   const [contentId, setContentId] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get contentId on component load
+  // Fetch page contentId when app loads
   useEffect(() => {
-  view.getContext()
-    .then((context) => {
-      console.log("🔍 Full context:", context);
-      const pageId = context?.extension?.content?.id;
-      console.log("✅ Found contentId:", pageId);
-      setContentId(pageId);
-    })
-    .catch((err) => {
-      console.error("❌ Failed to get context:", err);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-}, []);
+    const fetchContext = async () => {
+      try {
+        const context = await view.getContext();
+        console.log("🔍 Full context:", context);
+        const pageId = context?.extension?.content?.id;
+        if (!pageId) throw new Error("Page ID not found in context.");
+        setContentId(pageId);
+        console.log("✅ Found contentId:", pageId);
+      } catch (error) {
+        console.error("❌ Failed to get context:", error);
+        alert("Unable to retrieve page context. Please reload the page.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchContext();
+  }, []);
 
-
+  // PDF export handler
   const handleExport = async () => {
-  if (!contentId) {
-    alert("❌ Page ID not found.");
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/export-page', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ contentId })
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ PDF generation failed:", errorText);
-      alert("Failed to generate PDF: " + res.statusText);
+    if (!contentId) {
+      alert("❌ Page ID not found.");
       return;
     }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    window.open(url);
-  } catch (err) {
-    console.error("❌ Unexpected error during export:", err);
-    alert("Something went wrong during PDF export.");
-  }
-};
+    try {
+      console.log("📤 Sending contentId to backend:", contentId);
+      const res = await invoke('export-page', { contentId });
+      const parsed = typeof res === 'string' ? JSON.parse(res) : res;
 
+      if (!parsed.filepath) {
+        console.error("❌ No 'filepath' returned from backend:", parsed);
+        alert("Something went wrong. Please try again later.");
+        return;
+      }
+
+      const downloadUrl = `https://confluence-pdf-exporter.onrender.com${parsed.filepath}`;
+      console.log("📥 Initiating download from:", downloadUrl);
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = "confluence-page.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+    } catch (err) {
+      console.error("❌ PDF export failed:", err);
+      alert("Failed to generate and download PDF. Please check the logs or try again.");
+    }
+  };
 
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
       <h3>Export Page as PDF</h3>
-
       {loading ? (
-        <p>Loading...</p>
+        <p>Loading page context...</p>
       ) : (
         <button onClick={handleExport}>
           Download PDF
