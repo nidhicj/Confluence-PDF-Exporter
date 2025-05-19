@@ -95,6 +95,10 @@ export const exportHandler = async (req) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ html }),
       });
+
+      console.log("📡 Status:", pdfServiceRes.status);
+      const raw = await pdfServiceRes.text();
+      console.log("📡 Body:", raw);
     } catch (networkErr) {
       console.error("❌ Failed to contact PDF microservice:", networkErr);
       return new Response("PDF service unreachable", { status: 502 });
@@ -107,6 +111,13 @@ export const exportHandler = async (req) => {
     }
 
     const { filepath } = await pdfServiceRes.json();
+    try {
+      const parsed = JSON.parse(raw);
+      filepath = parsed.filepath;
+    } catch (jsonErr) {
+      console.error("❌ JSON parsing error:", jsonErr);
+      return new Response("Invalid JSON from Render", { status: 500 });
+    }
 
     if (!filepath) {
       console.error("❌ No filepath returned from Render service.");

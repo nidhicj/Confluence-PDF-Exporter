@@ -11,7 +11,13 @@ const FILE_DIR = path.join(__dirname, "pdfs");
 if (!fs.existsSync(FILE_DIR)) fs.mkdirSync(FILE_DIR);
 
 app.post("/generate", async (req, res) => {
+  console.log("📥 /generate endpoint hit");
+
   const { html } = req.body;
+  if (!html) {
+    console.error("❌ No HTML received in request");
+    return res.status(400).json({ error: "Missing HTML content" });
+  }
 
   try {
     const browser = await puppeteer.launch({
@@ -34,12 +40,14 @@ app.post("/generate", async (req, res) => {
     const filepath = path.join(FILE_DIR, filename);
     fs.writeFileSync(filepath, pdf);
 
+    console.log("✅ Filepath returned:", `/get-pdf?filepath=${filename}`);
     res.json({ filepath: `/get-pdf?filepath=${filename}` });
   } catch (err) {
-    console.error("PDF generation error:", err);
-    res.status(500).send("Failed to generate PDF");
+    console.error("❌ Error during PDF generation:", err);
+    res.status(500).send("PDF generation failed");
   }
 });
+
 
 app.get("/get-pdf", (req, res) => {
   const { filepath } = req.query;
