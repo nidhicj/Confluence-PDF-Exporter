@@ -72,5 +72,5 @@ app.get("/get-pdf", (req, res) => {
   res.sendFile(fullPath);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ;
 app.listen(PORT, () => console.log(`PDF service running on port ${PORT}`));
