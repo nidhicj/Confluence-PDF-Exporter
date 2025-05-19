@@ -25,21 +25,36 @@ function App() {
 
 
   const handleExport = async () => {
-    if (!contentId) {
-      alert("❌ Page ID not found.");
+  if (!contentId) {
+    alert("❌ Page ID not found.");
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/export-page', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ contentId })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("❌ PDF generation failed:", errorText);
+      alert("Failed to generate PDF: " + res.statusText);
       return;
     }
 
-    try {
-      const res = await invoke("export-page", { contentId });
-      const blob = new Blob([res], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      window.open(url);
-    } catch (err) {
-      console.error("❌ PDF export failed:", err);
-      alert("Something went wrong.");
-    }
-  };
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url);
+  } catch (err) {
+    console.error("❌ Unexpected error during export:", err);
+    alert("Something went wrong during PDF export.");
+  }
+};
+
 
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
