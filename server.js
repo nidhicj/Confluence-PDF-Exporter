@@ -57,6 +57,10 @@ app.post("/generate", async (req, res) => {
 
 
 app.get("/get-pdf", (req, res) => {
+
+  console.log("📡 Ping received!");
+  res.status(200).json({ message: "pong", time: new Date().toISOString() });
+
   const { filepath } = req.query;
 
   if (!filepath) {
