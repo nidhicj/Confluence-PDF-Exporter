@@ -5,15 +5,7 @@ const PDF_GENERATION_ENDPOINT = "https://confluence-pdf-exporter.onrender.com/ge
 
 export const exportHandler = async (req) => {
   try {
-
-    try {
-    const pingRes = await fetch("https://confluence-pdf-exporter.onrender.com/ping");
-    const pingText = await pingRes.text();
-    console.log("✅ Ping response from Render:", pingText);
-    } catch (err) {
-    console.error("❌ Cannot reach Render /ping:", err);
-    return new Response("Cannot connect to Render service", { status: 502 });
-    }
+    console.log("📥 /export hit");
 
     const contentId = req?.payload?.contentId;
 
