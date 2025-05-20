@@ -35,10 +35,10 @@ export const exportHandler = async (req, res) => {
   try {
     console.log("📥 /export hit");
 
-    const contentId = req?.payload?.contentId;
-
+    const contentId = req?.payload?.contentId; 65158;
+    console.log("📥 Received contentId:", contentId);
     if (!contentId) {
-      console.error("❌ No contentId found in payload:", req?.payload);
+      console.log("❌ No contentId found in payload:", req?.payload);
       return new Response("Missing contentId", { status: 400 });
     }
 
