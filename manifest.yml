@@ -24,3 +24,7 @@ permissions:
   scopes:
     - read:confluence-content.all
     - read:confluence-content.summary
+  external:
+    fetch:
+      client:
+        - 'https://confluence-pdf-exporter.onrender.com/knockPDF/'
