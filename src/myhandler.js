@@ -1,6 +1,6 @@
 import api, { route } from "@forge/api";
 import fetch from "node-fetch";
-import puppeteer from 'puppeteer';
+
 const PDF_GENERATION_ENDPOINT = "https://confluence-pdf-exporter.onrender.com/generate";
 
 export const generate = async (res) => {
