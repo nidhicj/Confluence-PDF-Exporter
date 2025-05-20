@@ -5,12 +5,19 @@ const { generate, exportHandler } = require("./src/myhandler");
 
 app.use(express.json({ limit: "10mb" }));
 
+app.get("/", (req, res) => {
+
+  res.send("Hello World! This is a PDF generation service.");
+
+  console.log("📥 /hit")
+  });
+  
 app.post("/generate",generate );
 app.post("/knockPDF",exportHandler);
 
 
 // 👇 this must use the correct port
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`✅ PDF service running on port ${PORT}`);
 });
