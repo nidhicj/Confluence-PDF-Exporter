@@ -1,34 +1,62 @@
 import api, { route } from "@forge/api";
 import fetch from "node-fetch";
-
+import puppeteer from 'puppeteer';
 const PDF_GENERATION_ENDPOINT = "https://confluence-pdf-exporter.onrender.com/generate";
 
-export const generate = async (req, res) => {
-  try {
-    console.log("📥 /generate hit");
-    console.log("🧪 Launching Puppeteer...");
+export const generate = async (res) => {
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
 
-    const page = await browser.newPage();
-    await page.setContent(req.body.html, { waitUntil: "networkidle0" });
+  // Launch the browser and open a new blank page
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
 
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "1in", bottom: "1in", left: "0.5in", right: "0.5in" }
-    });
+  // Navigate the page to a URL.
+  await page.goto('https://developer.chrome.com/');
 
-    await browser.close();
-    res.setHeader("Content-Type", "application/pdf");
-    res.send(pdf);
-  } catch (err) {
-    console.error("❌ Error during PDF generation:", err);
-    res.status(500).send("PDF generation failed");
-  }
+  // Set screen size.
+  await page.setViewport({width: 1080, height: 1024});
+
+  // Type into search box using accessible input name.
+  await page.locator('aria/Search').fill('automate beyond recorder');
+
+  // Wait and click on first result.
+  await page.locator('.devsite-result-item-link').click();
+
+  // Locate the full title with a unique string.
+  const textSelector = await page
+    .locator('text/Customize and automate')
+    .waitHandle();
+  const fullTitle = await textSelector?.evaluate(el => el.textContent);
+
+  // Print the full title.
+  console.log('The title of this blog post is "%s".', fullTitle);
+  res.send(fullTitle);
+  await browser.close();
+  // try {
+  //   console.log("📥 /generate hit");
+  //   console.log("🧪 Launching Puppeteer...");
+
+  //   const browser = await puppeteer.launch({
+  //     headless: true,
+  //     args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  //   });
+
+  //   // const page = await browser.newPage();
+  //   // await page.setContent(req.body.html, { waitUntil: "networkidle0" });
+
+  //   // const pdf = await page.pdf({
+  //   //   format: "A4",
+  //   //   printBackground: true,
+  //   //   margin: { top: "1in", bottom: "1in", left: "0.5in", right: "0.5in" }
+  //   // });
+
+  //   // await browser.close();
+  //   // res.setHeader("Content-Type", "application/pdf");
+  //   // res.send(pdf);
+  // } catch (err) {
+  //   console.error("❌ Error during PDF generation:", err);
+  //   res.status(500).send("PDF generation failed");
+  // }
 }
 
 export const exportHandler = async (req, res) => {
