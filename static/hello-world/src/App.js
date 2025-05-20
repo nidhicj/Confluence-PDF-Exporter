@@ -36,6 +36,7 @@ function App() {
     try {
       console.log("📤 Sending contentId to backend:", contentId);
       const res = await invoke('export-page', { contentId });
+      console.log("📤 Got something like res:", res);
       const parsed = typeof res === 'string' ? JSON.parse(res) : res;
 
       if (!parsed.filepath) {
