@@ -5,6 +5,7 @@ function App() {
   const [contentId, setContentId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  console.log("🔍 App loaded new Code");
   // Fetch page contentId when app loads
   useEffect(() => {
     const fetchContext = async () => {
@@ -34,6 +35,7 @@ function App() {
     }
 
   try {
+    
     const res = await fetch("https://confluence-pdf-exporter.onrender.com/knockPDF/", {
       method: 'POST',
       headers: {
