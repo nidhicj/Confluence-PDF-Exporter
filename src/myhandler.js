@@ -3,7 +3,35 @@ import fetch from "node-fetch";
 
 const PDF_GENERATION_ENDPOINT = "https://confluence-pdf-exporter.onrender.com/generate";
 
-export const exportHandler = async (req) => {
+export const generate = async (req, res) => {
+  try {
+    console.log("📥 /generate hit");
+    console.log("🧪 Launching Puppeteer...");
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
+    const page = await browser.newPage();
+    await page.setContent(req.body.html, { waitUntil: "networkidle0" });
+
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "1in", bottom: "1in", left: "0.5in", right: "0.5in" }
+    });
+
+    await browser.close();
+    res.setHeader("Content-Type", "application/pdf");
+    res.send(pdf);
+  } catch (err) {
+    console.error("❌ Error during PDF generation:", err);
+    res.status(500).send("PDF generation failed");
+  }
+}
+
+export const exportHandler = async (req, res) => {
   try {
     console.log("📥 /export hit");
 
