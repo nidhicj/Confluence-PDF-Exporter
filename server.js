@@ -12,7 +12,14 @@ app.get("/", (req, res) => {
   console.log("📥 /hit")
   });
 
-app.post("/generate",generate);
+app.get("/generate", (req, res) => {
+
+  generate(req, res);
+  res.send("I need PDF NOWW!!!!.");
+
+  console.log("📥 /generated")
+  });
+
 app.post("/knockPDF",exportHandler);
 
 
