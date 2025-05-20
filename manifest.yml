@@ -12,6 +12,15 @@ modules:
       resolver:
         function: export-page
 
+  myModule:
+    app:
+      CSP:
+        connect-src:
+          - 'self'
+          - https://api.atlassian.com/metal/ingest
+          - https://api.atlassian.com/gateway/api/emoji/
+          - https://confluence-pdf-exporter.onrender.com
+
   function:
     - key: export-page
       handler: myhandler.exportHandler
@@ -24,3 +33,5 @@ permissions:
   scopes:
     - read:confluence-content.all
     - read:confluence-content.summary
+
+  
