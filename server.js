@@ -11,8 +11,14 @@ app.get("/", (req, res) => {
 
   console.log("📥 /hit")
   });
+
+app.get("/generate",( req, res) => {
+
+  generate();
+
+  console.log("📥 /generate")
+  });
   
-app.post("/generate",generate );
 app.post("/knockPDF",exportHandler);
 
 
