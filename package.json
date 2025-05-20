@@ -4,7 +4,8 @@
   "description": "PDF generation microservice for Confluence Forge app",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "deploy": "cd static/hello-world/ &&  npm run build  && cd ../../ && forge deploy"
   },
   "dependencies": {
     "@forge/api": "^5.2.0",
