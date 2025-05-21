@@ -35,7 +35,7 @@ export const generate = async (req, res) => {
 
 
 export const exportHandler = async (req, res) => {
-  try {
+  
     console.log("📥 /export hit", req);
 
     const { contentId} = req.body;
@@ -49,16 +49,13 @@ export const exportHandler = async (req, res) => {
 
     // Fetch page content
     let pageData;
-    try {
-      const pageRes = await api.asApp().requestConfluence(
-        route`/wiki/rest/api/content/${contentId}?expand=body.storage,title,space`
-      //route`/wiki/spaces/<space_key>/pages/<contentID>/<title>`
-      );
-      pageData = await pageRes.json();
-    } catch (fetchErr) {
-      console.error("❌ Failed to fetch page content:", fetchErr);
-      return new Response("Failed to fetch page content", { status: 500 });
-    }
+    
+    const pageRes = await api.asApp().requestConfluence(
+      route`/wiki/rest/api/user?username=admin`
+    //route`/wiki/spaces/<space_key>/pages/<contentID>/<title>`
+    );
+    pageData = await pageRes.json();
+    
 
     const { title: pageTitle, body, space } = pageData;
     const pageBody = body?.storage?.value;
@@ -71,22 +68,20 @@ export const exportHandler = async (req, res) => {
 
     // Try to get branding page
     let logoLeft = null, logoRight = null;
-    try {
-      const brandingRes = await api.asApp().requestConfluence(
-        route`/wiki/rest/api/content?title=PDF Branding&spaceKey=${spaceKey}&expand=body.storage`
-        
-      );
-      const brandingData = await brandingRes.json();
-      const brandingHTML = brandingData?.results?.[0]?.body?.storage?.value;
+    
+    const brandingRes = await api.asApp().requestConfluence(
+      route`/wiki/rest/api/content?title=PDF Branding&spaceKey=${spaceKey}&expand=body.storage`
+      
+    );
+    const brandingData = await brandingRes.json();
+    const brandingHTML = brandingData?.results?.[0]?.body?.storage?.value;
 
-      if (brandingHTML) {
-        const matches = [...brandingHTML.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/g)];
-        logoLeft = matches[0]?.[1] ? `https://joshichinidhi.atlassian.net${matches[0][1]}` : null;
-        logoRight = matches[1]?.[1] ? `https://joshichinidhi.atlassian.net${matches[1][1]}` : null;
-      }
-    } catch (brandingErr) {
-      console.warn("⚠️ Branding fetch failed or not available:", brandingErr);
+    if (brandingHTML) {
+      const matches = [...brandingHTML.matchAll(/<img[^>]+src="([^"]+)"[^>]*>/g)];
+      logoLeft = matches[0]?.[1] ? `https://joshichinidhi.atlassian.net${matches[0][1]}` : null;
+      logoRight = matches[1]?.[1] ? `https://joshichinidhi.atlassian.net${matches[1][1]}` : null;
     }
+    
 
     // Compose HTML
     const html = `
@@ -124,20 +119,17 @@ export const exportHandler = async (req, res) => {
 
     // Send to Render service
     let pdfServiceRes;
-    try {
-      pdfServiceRes = await fetch(PDF_GENERATION_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ html }),
-      });
+    
+    pdfServiceRes = await fetch(PDF_GENERATION_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ html }),
+    });
 
-      console.log("📡 Status:", pdfServiceRes.status);
-      const raw = await pdfServiceRes.text();
-      console.log("📡 Body:", raw);
-    } catch (networkErr) {
-      console.error("❌ Failed to contact PDF microservice:", networkErr);
-      return new Response("PDF service unreachable", { status: 502 });
-    }
+    console.log("📡 Status:", pdfServiceRes.status);
+    const raw = await pdfServiceRes.text();
+    console.log("📡 Body:", raw);
+    
 
     if (!pdfServiceRes.ok) {
       const errorText = await pdfServiceRes.text();
@@ -146,13 +138,10 @@ export const exportHandler = async (req, res) => {
     }
 
     const { filepath } = await pdfServiceRes.json();
-    try {
-      const parsed = JSON.parse(raw);
-      filepath = parsed.filepath;
-    } catch (jsonErr) {
-      console.error("❌ JSON parsing error:", jsonErr);
-      return new Response("Invalid JSON from Render", { status: 500 });
-    }
+    
+    const parsed = JSON.parse(raw);
+    filepath = parsed.filepath;
+    
 
     if (!filepath) {
       console.error("❌ No filepath returned from Render service.");
@@ -165,8 +154,5 @@ export const exportHandler = async (req, res) => {
       headers: { "Content-Type": "application/json" },
     });
 
-  } catch (err) {
-    console.error("❌ Unexpected export error:", err);
-    return new Response("Internal Server Error", { status: 500 });
-  }
+   
 };
