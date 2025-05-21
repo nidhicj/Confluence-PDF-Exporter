@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { invoke, view } from '@forge/bridge';
 
-const PDF_MS = "https://ext-pdf-generator.onrender.com/";
+const PDF_MS = "https://ext-pdf-generator.onrender.com";
 
 function App() {
   const [contentId, setContentId] = useState(null);

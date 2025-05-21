@@ -27,4 +27,5 @@ permissions:
   external:
     fetch:
       client:
-        - 'https://ext-pdf-generator.onrender.com/'
+        - '*.onrender.com'
+        - '*.atlassian.net'
