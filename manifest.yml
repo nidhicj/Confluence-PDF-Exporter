@@ -12,7 +12,7 @@ modules:
       resolver:
         function: export-page
 
-  function:
+  function: 
     - key: export-page
       handler: myhandler.exportHandler
 
@@ -24,6 +24,8 @@ permissions:
   scopes:
     - read:confluence-content.all
     - read:confluence-content.summary
+    - read:confluence-user
+
   external:
     fetch:
       client:
