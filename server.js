@@ -1,9 +1,15 @@
+var cors = require('cors')
 const express = require("express");
 const app = express();
 const puppeteer = require("puppeteer"); // ✅ NOT puppeteer-core
 const { generate, exportHandler } = require("./src/myhandler");
 
+var corsOptions = {
+  origin: 'https://joshichinidhi.atlassian.net',
+}
+
 app.use(express.json({ limit: "10mb" }));
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
 
