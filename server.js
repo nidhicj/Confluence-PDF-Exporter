@@ -20,13 +20,8 @@ app.get("/generate", (req, res) => {
   console.log("📥 /generated")
   });
 
-app.get("/knockPDF", (req, res) => {
-
-  exportHandler(req, res);
-  res.send("Haio koflapa.");
-
-  console.log("📥 /knockPDF")
-  });
+app.post("/knockPDF", exportHandler) ;
+  
 
 
 // 👇 this must use the correct port

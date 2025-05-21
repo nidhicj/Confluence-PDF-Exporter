@@ -2,7 +2,7 @@ import api, { route } from "@forge/api";
 import fetch from "node-fetch";
 import puppeteer from "puppeteer";
 
-const PDF_GENERATION_ENDPOINT = "https://ext-pdf-generator.onrender.com/generate";
+
 
 export const generate = async (req, res) => {
 
@@ -36,9 +36,9 @@ export const generate = async (req, res) => {
 
 export const exportHandler = async (req, res) => {
   try {
-    console.log("📥 /export hit");
+    console.log("📥 /export hit", req);
 
-    const contentId = req?.payload?.contentId; 65158;
+    const { contentId} = req.body;
     console.log("📥 Received contentId:", contentId);
     if (!contentId) {
       console.log("❌ No contentId found in payload:", req?.payload);
@@ -52,6 +52,7 @@ export const exportHandler = async (req, res) => {
     try {
       const pageRes = await api.asApp().requestConfluence(
         route`/wiki/rest/api/content/${contentId}?expand=body.storage,title,space`
+      //route`/wiki/spaces/<space_key>/pages/<contentID>/<title>`
       );
       pageData = await pageRes.json();
     } catch (fetchErr) {
@@ -73,6 +74,7 @@ export const exportHandler = async (req, res) => {
     try {
       const brandingRes = await api.asApp().requestConfluence(
         route`/wiki/rest/api/content?title=PDF Branding&spaceKey=${spaceKey}&expand=body.storage`
+        
       );
       const brandingData = await brandingRes.json();
       const brandingHTML = brandingData?.results?.[0]?.body?.storage?.value;
