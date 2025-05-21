@@ -38,7 +38,7 @@ function App() {
   // PDF export handler
   const handleExport = async () => {
    
-  try {
+  
     console.log("📤 Sending contentId and spaceKey to backend:", contentId, spaceKey);
     const res = await fetch(`${PDF_MS}/knockPDF`, {
       method: 'POST',
@@ -77,10 +77,6 @@ function App() {
     link.click();
     link.remove();
 
-  } catch (err) {
-    console.error("❌ PDF export failed:", err);
-    alert("Failed to generate and download PDF. Please check the logs or try again.");
-  }
   };
 
 
