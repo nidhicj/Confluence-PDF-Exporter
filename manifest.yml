@@ -27,4 +27,4 @@ permissions:
   external:
     fetch:
       client:
-        - 'https://confluence-pdf-exporter.onrender.com/knockPDF/'
+        - 'https://ext-pdf-generator.onrender.com/knockPDF/'
