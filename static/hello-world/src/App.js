@@ -35,29 +35,31 @@ function App() {
     }
 
   try {
-    
-    const res = await fetch("https://confluence-pdf-exporter.onrender.com/knockPDF/", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ contentId })
-    });
+      console.log("📤 Sending contentId to backend:", contentId);
+      const res = await invoke('export-page', { contentId });
+      console.log("📤 Got something like res:", res);
+      const parsed = typeof res === 'string' ? JSON.parse(res) : res;
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ PDF generation failed:", errorText);
-      alert("Failed to generate PDF: " + res.statusText);
-      return;
+      if (!parsed.filepath) {
+        console.error("❌ No 'filepath' returned from backend:", parsed);
+        alert("Something went wrong. Please try again later.");
+        return;
+      }
+
+      const downloadUrl = `https://ext-pdf-generator.onrender.com${parsed.filepath}`;
+      console.log("📥 Initiating download from:", downloadUrl);
+
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = "confluence-page.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+    } catch (err) {
+      console.error("❌ PDF export failed:", err);
+      alert("Failed to generate and download PDF. Please check the logs or try again.");
     }
-
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    window.open(url);
-  } catch (err) {
-    console.error("❌ Unexpected error during export:", err);
-    alert("Something went wrong during PDF export.");
-  }
   };
 
   return (
