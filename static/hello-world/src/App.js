@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { invoke, view } from '@forge/bridge';
-
-const PDF_MS = "https://ext-pdf-generator.onrender.com";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 function App() {
   const [contentId, setContentId] = useState(null);
   const [spaceKey, setSpaceKey] = useState(null);
   const [loading, setLoading] = useState(true);
+  const containerRef = useRef();
+
 
   console.log("🔍 App loaded new Code");
   // Fetch page contentId when app loads
@@ -40,44 +42,45 @@ function App() {
    
   
     console.log("📤 Sending contentId and spaceKey to backend:", contentId, spaceKey);
-    const res = await fetch(`${PDF_MS}/knockPDF`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ contentId, spaceKey, ping: 'ping' })
-     }); 
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ PDF generation failed:", errorText);
-      alert("Failed to generate PDF: " + res.statusText);
-      return;
-    }
-    console.log("📤 Got something like res:", res);
-    // parse the JSON body
-    const data = await res.json();
-    console.log("🖖 Handshake from backend:", data); 
-
-    // you should see → { pong: 'pong', filepath: '…' }
-
-    const parsed = typeof res === 'string' ? JSON.parse(res) : res;
-
-    if (!parsed.filepath) {
-      console.error("❌ No 'filepath' returned from backend:", parsed);
-      alert("Something went wrong. Please try again later.");
+    
+    // 2. Fetch transformed HTML
+    const {transformedHtml, error } = await invoke(
+      "exportHandler",
+      { contentId }
+    );
+    console.log("📤 Frontend Transformed HTML - labababab:", transformedHtml);
+    console.log("📤 Frontend Error:",error);
+    if (error) {
+      alert(error);
       return;
     }
 
-    const downloadUrl = `https://ext-pdf-generator.onrender.com${parsed.filepath}`;
-    console.log("📥 Initiating download from:", downloadUrl);
+    // 3. Inject into hidden div
+    console.log("containerRef", containerRef);  
+    const container = containerRef.current;
+    container.innerHTML = transformedHtml;
 
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = "confluence-page.pdf";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    // 4. Render to canvas
+    const canvas = await html2canvas(container, {
+      scale: 2,           // higher resolution
+      useCORS: true,      // if images are cross-origin
+    });
 
+    // 5. Create PDF
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "pt", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight =
+      (canvas.height * pdfWidth) / canvas.width;
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+    // 6. Trigger download
+    pdf.save(`page-${contentId}.pdf`);
+
+    // 7. Clean up
+    container.innerHTML = "";
   };
+
 
 
   return (

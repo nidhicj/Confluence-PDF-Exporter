@@ -6,8 +6,10 @@
   "dependencies": {
     "@atlaskit/css-reset": "^6.6.2",
     "@forge/bridge": "4.5.2",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "react": "^16.1.0",
+    "react-dom": "^16.1.0"
   },
   "devDependencies": {
     "react-scripts": "^5.0.1"
