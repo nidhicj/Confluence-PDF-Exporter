@@ -1,0 +1,26 @@
+name: Deploy Forge App
+
+on:
+  push:
+    branches: [main]  # or 'master', depending on your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install Forge CLI
+        run: npm install -g @forge/cli
+
+      - name: Authenticate with Forge using GitHub Secret
+        run: echo "${{ secrets.CONFLUENCE_AUTH }}" | forge auth login --token -
+
+      - name: Deploy the Forge app
+        run: forge deploy --environment production
