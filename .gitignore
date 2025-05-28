@@ -50,3 +50,9 @@ Thumbs.db
 
 
 /.forge/
+
+BE_transformedHtml.html
+forge_apiToken.txt
+*-lock.json
+server.js
+trash.txt
