@@ -10,10 +10,10 @@ modules:
       title: Export as PDF
       resource: main
       resolver:
-        function: export-page
+        function: exportHandler
 
   function: 
-    - key: export-page
+    - key: exportHandler
       handler: myhandler.exportHandler
 
 resources:
@@ -30,3 +30,7 @@ permissions:
     - search:confluence
     - read:attachment:confluence
 
+  content:
+    styles:
+      - 'unsafe-inline'
+ 
