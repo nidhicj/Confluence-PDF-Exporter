@@ -48,7 +48,7 @@ function App() {
    
   
     console.log("📤 Sending contentId and spaceKey to backend:", contentId, spaceKey);
-    try {
+    // try {
     // 2. Fetch transformed HTML
     const result = await invoke(
       "exportHandler",
@@ -76,6 +76,7 @@ function App() {
 
     // 5. Create PDF
     const imgData = canvas.toDataURL("image/png");
+    console.log("📤 Frontend Image Data:", imgData);
     const pdf = new jsPDF("p", "pt", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight =
@@ -87,10 +88,10 @@ function App() {
 
     // 7. Clean up
     containerRef.current.innerHTML = "";
-    }catch (err) {
-      console.error("[UI] ❌ invoke threw:", err);
-      setError(err.message);
-    }
+    // }catch (err) {
+    //   console.error("[UI] ❌ invoke threw:", err);
+    //   setError(err.message);
+    // }
   }
   
   useEffect(() => {
