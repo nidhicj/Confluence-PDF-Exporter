@@ -2,6 +2,8 @@ import api, { route } from "@forge/api";
 import fetch from "node-fetch";
 // const fetch = require("node-fetch");
 import * as cheerio from 'cheerio';
+import { PNG } from "pngjs";
+import { getSecret } from '@forge/secrets';
 
 const OFFICE_DOMAIN = "https://joshichinidhi.atlassian.net";
 const PDF_BRANDING_PAGE = "PDF Branding";
@@ -35,10 +37,43 @@ export const generate = async (req, res) => {
   }
 }
 
+async function isPngValid(url) {
+  // 1. Download the raw bytes
+  // const res = await fetch(url, { headers: authHeaders });
+  const res = await api
+    .asApp()
+    .requestConfluence(
+      route`${url}`);
+
+  if (!res.ok) {
+    console.warn(`Failed to download image: ${res.status}`);
+    return false;
+  }
+  const arrayBuffer = await res.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // 2. Quick signature check (optional, but cheap)
+  const pngSignature = Buffer.from([0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A]);
+  if (!buffer.slice(0, 8).equals(pngSignature)) {
+    console.warn("Not a PNG (bad signature)");
+    return false;
+  }
+
+  // 3. Actually try to parse all chunks
+  try {
+    PNG.sync.read(buffer);
+    return true;    // parse succeeded → valid PNG
+  } catch (err) {
+    console.error("PNG parse error:", err);
+    return false;   // parse threw → corrupt or truncated
+  }
+}
+
+
 export const exportHandler = async (req) => {
   
   // console.log(" /export hit", req);
-  try {
+  
   let contentId = req.call?.payload?.contentId || req.payload?.contentId 
   // console.log(" contentId from payload:", contentId);
   if (!contentId) {
@@ -99,7 +134,7 @@ export const exportHandler = async (req) => {
   const brandingJson = await brandingRes.json();
 
   // 4) Inspect what you actually got
-  console.log("📝 brandingJson =", JSON.stringify(brandingJson, null, 2));
+  // console.log("📝 brandingJson =", JSON.stringify(brandingJson, null, 2));
   
 
   const branding_pageId = brandingJson.results?.[0]?.content?.id;
@@ -123,13 +158,19 @@ export const exportHandler = async (req) => {
   }
 
   const brandingPage_attachments_json =  await brandingPage_attachments.json();
-  // console.log("brandingPage_attachments_json =", brandingPage_attachments_json);
+  console.log("brandingPage_attachments_json =", brandingPage_attachments_json);
   
-  const leftLogo_webUILink = brandingPage_attachments_json.results?.[0]?.downloadLink;
-  const rightLogo_webUILink = brandingPage_attachments_json.results?.[1]?.downloadLink;
+  const leftLogo_webuiLink = `${OFFICE_DOMAIN}/wiki${brandingPage_attachments_json.results?.[0]?.webuiLink}`;
+  const rightLogo_webuiLink = `${OFFICE_DOMAIN}/wiki${brandingPage_attachments_json.results?.[1]?.webuiLink}`;
 
-  // console.log("leftLogo_webUILink =", leftLogo_webUILink);
-  // console.log("rightLogo_webUILink =", rightLogo_webUILink);
+  const leftlogo_downloadLink = `${OFFICE_DOMAIN}/wiki${brandingPage_attachments_json.results?.[0]?.downloadLink}`;
+  const rightlogo_downloadLink = `${OFFICE_DOMAIN}/wiki${brandingPage_attachments_json.results?.[1]?.downloadLink}`;
+
+  console.log("leftLogo_downloadLink =", leftlogo_downloadLink);
+  console.log("rightLogo_downloadLink =", rightlogo_downloadLink);
+
+  // console.log("leftLogo_webuiLink =", leftLogo_webuiLink);
+  // console.log("rightLogo_webuiLink =", rightLogo_webuiLink);
 
   const currentPage_html = pageData.body.storage.value;
   // console.log("currentPage_html =", currentPage_html);
@@ -137,6 +178,8 @@ export const exportHandler = async (req) => {
   // 3) Start building with Cheerio
   //    — load only the <body> fragment for easy manipulation
   const $ = cheerio.load(currentPage_html);
+  console.log("📝 Loaded page body with Cheerio", pageData);
+
 
   // 4) Create your header and footer nodes
   const header = cheerio.load(`<header></header>`)("header")
@@ -151,15 +194,15 @@ export const exportHandler = async (req) => {
       padding: "0.5em 0",
       "border-bottom": "1px solid #ccc"
     })
-    .prepend( `${OFFICE_DOMAIN}${leftLogo_webUILink}`
-      ? `<img src="${OFFICE_DOMAIN}/wiki${leftLogo_webUILink}" style="height:40px"/>`
+    .prepend( `${leftlogo_downloadLink}`
+      ? `<img src="${leftlogo_downloadLink}" style="height:40px"/>`
       : ""
     )
     .append(
       `<span>${pageTitle} — ${new Date().toLocaleDateString()}</span>`
     )
-    .append( `${OFFICE_DOMAIN}${rightLogo_webUILink}`
-      ? `<img src="${OFFICE_DOMAIN}/wiki${rightLogo_webUILink}" style="height:40px"/>`
+    .append( `${rightlogo_downloadLink}`
+      ? `<img src="${rightlogo_downloadLink}" style="height:40px"/>`
       : ""
     );
 
@@ -199,9 +242,5 @@ export const exportHandler = async (req) => {
   // 7) Return the transformed HTML for PDF rendering
     console.log("📤 Backend Transformed HTML:", fullHtml);
   return { body: fullHtml, error: null };   
-  } catch (error) {
-    console.error("❌ Error in exportHandler:", error);
-    return { body: null, error: "Failed to generate PDF" };
-  }
 
 };
