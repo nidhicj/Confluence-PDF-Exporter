@@ -70,52 +70,37 @@ async function isPngValid(url) {
 }
 
 
-export const exportHandler = async (req) => {
-  
-  // console.log(" /export hit", req);
-  
-  let contentId = req.call?.payload?.contentId || req.payload?.contentId 
-  // console.log(" contentId from payload:", contentId);
-  if (!contentId) {
-    // console.log(" No contentId in payload, using context");
-    contentId = req.context?.extension?.content?.id || req.context?.content?.id             // local resolver
-  }
-  // console.log(" Received contentId:", contentId);
-  
-  
-  let spaceKey = req.space  // remote endpoint
-  // console.log(" spaceKey from payload:", spaceKey);
-  if (!spaceKey) {
-    // console.log(" No spaceKey in payload, using context");
-    spaceKey = req.context?.extension?.space?.key || req.context?.space?.key;             // local resolver
-  }
-  // console.log(" Received spaceKey:", spaceKey);
+export const exportHandler = async (pageId) => {
 
-
-  // 1. Fetch page body.storage
-  const res = await api
+  console.log("📥 exportHandler hit with pageId:", pageId);
+  // Getting padeId and SpaceKey
+    const basicPage = await api
     .asApp()
     .requestConfluence(
-      route`/wiki/api/v2/pages/${contentId}?body-format=storage`
+      route`/wiki/api/v2/pages/${pageId}?body-format=storage`
     );
+    
+    if ( basicPage.ok) {
+      throw new Error(`Failed to fetch page: $ basicPage.status}`);
+    }
+    const pageData = await basicPage.json();
+    // console.log(" Page data:", pageData);
+    
+    // 1) Fetch the page data (you already have this part)
+    const { title: pageTitle, body} = pageData;
+    const pageBody = body?.storage?.value;
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch page: ${res.status}`);
-  }
-  const pageData = await res.json();
-  // console.log(" Page data:", pageData);
-  
-  // 1) Fetch the page data (you already have this part)
-  const { title: pageTitle, body} = pageData;
-  const pageBody = body?.storage?.value;
+    if (!pageBody || !pageTitle ) {
+      // console.error("❌ Missing required page fields:", pageData);
+      return new Response("Page data incomplete", { status: 500 });
+    }
+    console.log(" Page title:", pageTitle);
 
-  if (!pageBody || !pageTitle ) {
-    // console.error("❌ Missing required page fields:", pageData);
-    return new Response("Page data incomplete", { status: 500 });
-  }
-  // console.log(" Page title:", pageTitle);
+  return { pageTitle };   
 
+};
 
+/*
   // 2) Fetch branding HTML & extract logos (your existing logic)
   // Try to get branding page
   
@@ -241,6 +226,4 @@ export const exportHandler = async (req) => {
 
   // 7) Return the transformed HTML for PDF rendering
     console.log("📤 Backend Transformed HTML:", fullHtml);
-  return { body: fullHtml, error: null };   
-
-};
+*/
